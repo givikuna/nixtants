@@ -64,10 +64,10 @@ You can then declare any information in it like this:
 
 ```Nix
 {
-  nixtants.users.givik.codeberg = {
-    username = "giviko";
-    email = "gvtsvariani@gmail.com";
-  };
+    nixtants.users.givik.codeberg = {
+        username = "giviko";
+        email = "gvtsvariani@gmail.com";
+    };
 }
 ```
 
@@ -87,10 +87,10 @@ In `./nixtants/codeberg/default.nix` you can put:
 
 ```Nix
 {
-  nixtants.users.givik.codeberg = {
-    username = "giviko";
-    email = "gvtsvariani@gmail.com";
-  };
+    nixtants.users.givik.codeberg = {
+        username = "giviko";
+        email = "gvtsvariani@gmail.com";
+    };
 }
 ```
 
@@ -177,6 +177,58 @@ Now you simply import `./constants` instead as follows in your flake:
 ```
 
 ### Changing Nixtants Module Name
+
+By default both the option and the module argument are named `nixtants`.
+
+If you'd rather call the namespace something else (say `constants`), use the
+exported `lib.mkNixtants` helper with the name you want:
+
+```Nix
+{
+    outputs = inputs: {
+        nixosConfigurations = {
+            nixos = inputs.nixpkgs.lib.nixosSystem {
+                system = "x86_64-linux";
+                modules = [
+                    ./configuration.nix
+
+                    (inputs.nixtants.lib.mkNixtants "constants")
+                    ./constants
+                ];
+                specialArgs = { inherit inputs; };
+            };
+        };
+    }
+}
+```
+
+This produces a module that declares a `constants` option identical to standard `nixtants`.
+
+You then consume it like any other module argument:
+
+```Nix
+{ constants, pkgs, ... }: {
+    programs.git = {
+        enable = true;
+        settings.user = {
+            name  = constants.users.givik.username;
+            email = constants.users.givik.email;
+        };
+    };
+}
+```
+
+Note, when declaring the constants instead of `nixtants` use `constants`:
+
+```Nix
+{
+    # used to be `nixtants`
+    constants.users.givik.codeberg = {
+        username = "giviko";
+        email = "gvtsvariani@gmail.com";
+    };
+}
+```
 
 ### Continuation
 
